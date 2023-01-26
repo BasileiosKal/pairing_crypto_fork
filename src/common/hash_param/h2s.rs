@@ -2,7 +2,7 @@ use ff::Field;
 use rand::RngCore;
 
 use crate::{
-    common::serialization::{i2osp, i2osp_with_data},
+    common::serialization::i2osp,
     curves::bls12_381::{
         hash_to_curve::{ExpandMessageState, InitExpandMessage},
         Scalar,
@@ -15,7 +15,6 @@ use super::{
         MAX_DST_SIZE,
         MAX_MESSAGE_SIZE,
         MAX_VALUE_GENERATION_RETRY_COUNT,
-        NON_NEGATIVE_INTEGER_ENCODING_LENGTH,
         XOF_NO_OF_BYTES,
     },
     ExpandMessageParameter,
@@ -103,12 +102,8 @@ pub(crate) trait HashToScalarParameter: ExpandMessageParameter {
             return Err(Error::DstIsTooLarge);
         }
 
-        // msg_prime = I2OSP(len(msg), 8) || msg
-        let msg_prime =
-            i2osp_with_data(message, NON_NEGATIVE_INTEGER_ENCODING_LENGTH)?;
-
         // hash_to_scalar(msg_prime || dst_prime, 1)
-        Ok(Self::hash_to_scalar(&msg_prime, 1, Some(dst))?[0])
+        Ok(Self::hash_to_scalar(&message, 1, Some(dst))?[0])
     }
 }
 
