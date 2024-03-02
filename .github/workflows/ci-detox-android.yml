@@ -105,11 +105,11 @@ jobs:
 
 
 
-      - name: Use specific Java version for sdkmanager to work
-        uses: joschi/setup-jdk@v1
-        with:
-          java-version: 'openjdk8'
-          architecture: 'x64'
+      # - name: Use specific Java version for sdkmanager to work
+      #   uses: joschi/setup-jdk@v1
+      #   with:
+      #     java-version: 'openjdk8'
+      #     architecture: 'x64'
 
       - name: Download Android Emulator Image
         run: |
