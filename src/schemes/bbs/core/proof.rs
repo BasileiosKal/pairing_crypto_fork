@@ -30,7 +30,7 @@ use crate::{
     },
     error::Error,
 };
-use core::convert::TryFrom;
+// use core::convert::TryFrom;
 use ff::Field;
 use group::{Curve, Group};
 use pairing::{MillerLoopResult as _, MultiMillerLoop};

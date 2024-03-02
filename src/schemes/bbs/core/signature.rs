@@ -21,7 +21,7 @@ use crate::{
     },
     error::Error,
 };
-use core::{convert::TryFrom, fmt};
+use core::fmt;
 use ff::Field;
 use group::{Curve, Group};
 use pairing::{MillerLoopResult, MultiMillerLoop};
