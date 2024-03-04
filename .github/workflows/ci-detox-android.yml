@@ -153,7 +153,7 @@ jobs:
 
       - name: Detox E2E Test
         working-directory: wrappers/react-native
-        run: yarn detox:android:ci
+        run: yarn detox:android
 
       - name: Archive detox failed test results
         if: failure()
