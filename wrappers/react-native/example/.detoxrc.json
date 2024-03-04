@@ -1,6 +1,10 @@
 {
-  "testRunner": "jest",
-  "runnerConfig": "jest.config.js",
+  "testRunner": {
+    "$0": "jest",
+    "args": {
+      "config": "jest.config.js"
+    }
+  },
   "skipLegacyWorkersInjection": true,
   "apps": {
     "ios.release": {
