@@ -1,4 +1,9 @@
+# [0.4.2](https://github.com/mattrglobal/pairing_crypto/compare/0.4.1...0.4.2) (2023-09-20)
+
+Node 18.x support
+
 # [0.4.1](https://github.com/mattrglobal/pairing_crypto/compare/0.4.0...0.4.1) (2023-07-21)
+
 Fix exports for @mattrglobal/pairing-crypto-rn React Native wrapper library
 
 # [0.4.0](https://github.com/mattrglobal/pairing_crypto/compare/0.4.0...0.3.0) (2023-07-11)
