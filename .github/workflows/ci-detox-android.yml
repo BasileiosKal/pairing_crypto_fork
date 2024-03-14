@@ -134,9 +134,9 @@ jobs:
 
       - name: Download Android Emulator Image
         run: |
-          ls $ANDROID_HOME/cmdline-tools/
-          echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-31;google_apis;arm64-v8a"
-          echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name Pixel_2_API_31 --device "pixel_2" -k 'system-images;android-31;google_apis;arm64-v8a'
+          $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-31;google_apis;arm64-v8a"
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force --name Pixel_2_API_31 --device "pixel_2" -k 'system-images;android-31;google_apis;arm64-v8a'
           $ANDROID_HOME/emulator/emulator -list-avds
 
       - name: Setup Java
