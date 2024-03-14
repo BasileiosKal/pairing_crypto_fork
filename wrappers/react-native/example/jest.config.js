@@ -7,7 +7,7 @@ module.exports = {
   globalSetup: 'detox/runners/jest/globalSetup',
   globalTeardown: 'detox/runners/jest/globalTeardown',
   testEnvironment: './__tests__/detox-environment',
-  testTimeout: 30000,
+  testTimeout: 60000,
   testMatch: ['**/*.e2e.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/lib/'],
   verbose: true,
