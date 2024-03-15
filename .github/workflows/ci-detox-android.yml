@@ -155,13 +155,13 @@ jobs:
       - name: Launce android emulator
         working-directory: wrappers/react-native
         run: |
-          nohup $ANDROID_HOME/emulator/emulator -verbose -no-audio-no-boot-anim -no-window -read-only -gpu host -quit-after-boot -port 15776 @Pixel_2_API_31 > /dev/null 2>&1 &
-          adb devices
+          nohup $ANDROID_HOME/emulator/emulator -verbose -no-audio-no-boot-anim -no-window -read-only -gpu host -quit-after-boot -port 15776 @Pixel_2_API_31 &
+          $ANDROID_HOME/platform-tools/adb devices
 
       - name: Detox E2E Test
         working-directory: wrappers/react-native
         run: |
-          adb devices
+          $ANDROID_HOME/platform-tools/adb devices
           yarn detox:android:ci
 
       - name: Archive detox failed test results
