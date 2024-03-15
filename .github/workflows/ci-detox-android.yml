@@ -16,12 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # pin@v3.5.1
 
-      # Needed to resolve any private git based dependencies like https://github.com/mattrglobal/blstrs
-      - name: Setup SSH Agent
-        uses: webfactory/ssh-agent@836c84ec59a0e7bc0eabc79988384eb567561ee2 # pin@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Setup rust toolchain
         uses: actions-rs/toolchain@b2417cde72dcf67f306c0ae8e0828a81bf0b189f # pin@v1.0.6
         with:
@@ -66,18 +60,22 @@ jobs:
   android:
     name: Detox Android E2E Testing
     needs: [java-wrapper]
-    runs-on: ${{ matrix.runners }}
-    strategy:
-      matrix:
-        runners: [[self-hosted, macos, X64, general, runner03]]
-    concurrency:
-      group: ci-detox-android-${{ matrix.runners }}-${{ github.head_ref }}
-      cancel-in-progress: true
-    timeout-minutes: 30
+    runs-on: macos-latest
+    # strategy:
+    #   matrix:
+    #     runners: [[self-hosted, macos, general, ARM64]]
+    # concurrency:
+    #   group: ci-detox-android-${{ matrix.runners }}-${{ github.head_ref || github.run_id}}
+    #   cancel-in-progress: true
+    # timeout-minutes: 60
+
+    env:
+      NODE_OPTIONS: "--max-old-space-size=5120"
 
     defaults:
       run:
         working-directory: wrappers/react-native
+        shell: zsh -il {0} # load ~/.zshrc
 
     steps:
       - name: Checkout
@@ -105,6 +103,21 @@ jobs:
         working-directory: wrappers/react-native/example
         run: yarn install --frozen-lockfile
 
+
+
+      # - name: Use specific Java version for sdkmanager to work
+      #   uses: joschi/setup-jdk@v1
+      #   with:
+      #     java-version: 'openjdk8'
+      #     architecture: 'x64'
+
+      # - name: Download Android Emulator Image
+      #   run: |
+      #     echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
+      #     echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
+      #     $ANDROID_HOME/emulator/emulator -list-avds
+
+
       - name: Config self hosted env
         run: |
           echo "ANDROID_HOME=/Users/runner/Library/Android/sdk" >> $GITHUB_ENV
@@ -121,8 +134,9 @@ jobs:
 
       - name: Download Android Emulator Image
         run: |
-          echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
-          echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name Nexus_5X_API_29 --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
+          $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;x86"
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force --name Pixel_2_API_31 --device "pixel_2" -k 'system-images;android-30;google_apis;x86'
           $ANDROID_HOME/emulator/emulator -list-avds
 
       - name: Setup Java
@@ -138,9 +152,23 @@ jobs:
       - name: Inspect Linked Libraries
         run: ls -R android/src/main/jniLibs
 
+      - name: Launce android emulator
+        id: emu1
+        timeout-minutes: 5
+        continue-on-error: true
+        working-directory: wrappers/react-native
+        run: |
+          echo "Starting emulator"
+          nohup $ANDROID_HOME/emulator/emulator -verbose -no-audio -no-boot-anim -no-window -read-only -gpu host -port 15776 @Pixel_2_API_31 > /dev/null 2>&1  &
+          $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
+          $ANDROID_HOME/platform-tools/adb devices
+
       - name: Detox E2E Test
         working-directory: wrappers/react-native
-        run: yarn detox:android:ci
+        run: |
+          $ANDROID_HOME/platform-tools/adb devices
+          yarn detox:android:ci
+        shell: bash
 
       - name: Archive detox failed test results
         if: failure()

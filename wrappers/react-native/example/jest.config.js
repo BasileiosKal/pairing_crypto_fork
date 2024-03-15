@@ -3,10 +3,11 @@ const package = require('./package.json');
 module.exports = {
   displayName: package.name,
   preset: 'react-native',
-  reporters: ['detox/runners/jest/streamlineReporter'],
+  reporters: ['detox/runners/jest/reporter'],
+  globalSetup: 'detox/runners/jest/globalSetup',
+  globalTeardown: 'detox/runners/jest/globalTeardown',
   testEnvironment: './__tests__/detox-environment',
-  testRunner: 'jest-circus/runner',
-  testTimeout: 20000,
+  testTimeout: 60000,
   testMatch: ['**/*.e2e.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/lib/'],
   verbose: true,
@@ -18,4 +19,5 @@ module.exports = {
   restoreMocks: true,
   clearMocks: true,
   resetMocks: true,
+  maxWorkers: 1,
 };
