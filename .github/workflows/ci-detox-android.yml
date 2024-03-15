@@ -155,7 +155,8 @@ jobs:
       - name: Launce android emulator
         working-directory: wrappers/react-native
         run: |
-          nohup $ANDROID_HOME/emulator/emulator -verbose -no-audio-no-boot-anim -no-window -read-only -gpu host -quit-after-boot -port 15776 @Pixel_2_API_31 &
+          echo "Starting emulator"
+          nohup $ANDROID_HOME/emulator/emulator -verbose -no-audio-no-boot-anim -no-window -read-only -gpu host -port 15776 @Pixel_2_API_31 &
           $ANDROID_HOME/platform-tools/adb devices
 
       - name: Detox E2E Test
