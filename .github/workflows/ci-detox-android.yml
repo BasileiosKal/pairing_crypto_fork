@@ -137,9 +137,7 @@ jobs:
           $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;x86"
           echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force --name Pixel_2_API_31 --device "pixel_2" -k 'system-images;android-30;google_apis;x86'
-          $ANDROID_HOME/emulator/emulator -verbose -no-audio -no-boot-anim -port 15776 @Pixel_2_API_31 > /dev/null 2>&1 &
           $ANDROID_HOME/emulator/emulator -list-avds
-          adb devices
 
       - name: Setup Java
         uses: actions/setup-java@v2
@@ -156,7 +154,10 @@ jobs:
 
       - name: Detox E2E Test
         working-directory: wrappers/react-native
-        run: yarn detox:android:ci
+        run: |
+          $ANDROID_HOME/emulator/emulator -verbose -no-audio -no-boot-anim -port 15776 @Pixel_2_API_31 > /dev/null 2>&1 &
+          adb devices
+          yarn detox:android:ci
 
       - name: Archive detox failed test results
         if: failure()
