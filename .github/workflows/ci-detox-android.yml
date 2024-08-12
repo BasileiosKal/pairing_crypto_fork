@@ -124,34 +124,61 @@ jobs:
         id: device
         run: node -e "console.log('AVD_NAME=' + require('./example/.detoxrc.json').devices.emulator.device.avdName)" >> $GITHUB_OUTPUT
 
+      - name: Inspect environment
+        run: echo $ANDROID_HOME
+
       - name: Free up space
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/share/boost
 
-      # TODO: Running test serially. Parallel emulator launce (for each test) fails. Try to fix that.
-      - name: Detox test KeyGen
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-            api-level: 29
-            arch: x86_64
-            avd-name: ${{ steps.device.outputs.AVD_NAME }}
-            target: google_apis
-            disable-animations: true
-            emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            script: cd wrappers/react-native && yarn detox:android:ci /__tests__/keyGen.e2e.ts
+      - name: Download Android Build Tools
+        timeout-minutes: 5
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;34.0.0"
+          cd $ANDROID_SDK_ROOT/build-tools/34.0.0/
+          ln -sf d8 dx
+          cd lib
+          ln -sf d8.jar dx.jar
 
-      - name: Detox test Signature
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-            api-level: 29
-            arch: x86_64
-            avd-name: ${{ steps.device.outputs.AVD_NAME }}
-            target: google_apis
-            disable-animations: true
-            emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            script: cd wrappers/react-native && yarn detox:android:ci /__tests__/signature.e2e.ts
+      - name: Start adb server
+        id: adb_start
+        run: $ANDROID_HOME/platform-tools/adb start-server
+
+      - name: Download Android Emulator Image
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-29;google_apis;x86_64"
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force --name emu_1 --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86_64'
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force --name emu_2 --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86_64'
+          $ANDROID_HOME/emulator/emulator -list-avds
+
+      - name: Launch emulators
+        if: steps.adb_start.outcome == 'success'
+        run: |
+           /usr/local/lib/android/sdk/emulator/emulator -port 5554 -avd emu_1 -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none &
+           /usr/local/lib/android/sdk/emulator/emulator -port 5556 -avd emu_2 -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none &
+
+      - name: Wait for emulators to boot
+        id: booted
+        timeout-minutes: 2
+        run: |
+            set -x
+            while ! $ANDROID_HOME/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed 2> /dev/null || \
+                  ! $ANDROID_HOME/platform-tools/adb -s emulator-5556 shell getprop sys.boot_completed 2> /dev/null
+            do
+              sleep 0.3
+            done
+
+      - name: KeyGen test
+        working-directory: wrappers/react-native
+        if: steps.booted.outcome == 'success'
+        run: yarn detox:android:ci -n emu_1 /__tests__/keyGen.e2e.ts
+
+      - name: Signature test
+        working-directory: wrappers/react-native
+        if: steps.booted.outcome == 'success'
+        run: yarn detox:android:ci -n emu_2 /__tests__/signature.e2e.ts
 
       - name: Archive detox failed test results
         if: failure()
