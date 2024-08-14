@@ -167,6 +167,7 @@ jobs:
             while ! $ANDROID_HOME/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed 2> /dev/null || \
                   ! $ANDROID_HOME/platform-tools/adb -s emulator-5556 shell getprop sys.boot_completed 2> /dev/null
             do
+              $ANDROID_HOME/platform-tools/adb devices -l
               sleep 0.3
             done
 
