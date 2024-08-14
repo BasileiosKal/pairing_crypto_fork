@@ -174,12 +174,16 @@ jobs:
       - name: KeyGen test
         working-directory: wrappers/react-native
         if: steps.booted.outcome == 'success'
-        run: yarn detox:android:ci -n emu_1 /__tests__/keyGen.e2e.ts
+        run: |
+            $ANDROID_HOME/platform-tools/adb devices -l
+            yarn detox:android:ci -n emu_1 /__tests__/keyGen.e2e.ts
 
       - name: Signature test
         working-directory: wrappers/react-native
         if: steps.booted.outcome == 'success'
-        run: yarn detox:android:ci -n emu_2 /__tests__/signature.e2e.ts
+        run: |
+            $ANDROID_HOME/platform-tools/adb devices -l
+            yarn detox:android:ci -n emu_2 /__tests__/signature.e2e.ts
 
       - name: Archive detox failed test results
         if: failure()
