@@ -120,10 +120,6 @@ jobs:
       - name: Inspect Linked Libraries
         run: ls -R android/src/main/jniLibs
 
-      - name: Get device name
-        id: device
-        run: node -e "console.log('AVD_NAME=' + require('./example/.detoxrc.json').devices.emulator.device.avdName)" >> $GITHUB_OUTPUT
-
       - name: Inspect environment
         run: echo $ANDROID_HOME
 
@@ -189,9 +185,7 @@ jobs:
 
       - name: Cleanup
         if: steps.key_gen_test.outcome == 'success' && steps.signature_test.outcome == 'success'
-        run: |
-            $ANDROID_HOME/platform-tools/adb -s emulator-5554 emu kill
-            $ANDROID_HOME/platform-tools/adb -s emulator-5556 emu kill
+        run: $ANDROID_HOME/platform-tools/adb devices | grep emulator | cut -f1 | while read line; do adb  -s $line emu kill;
 
       - name: Archive detox failed test results
         if: failure()
