@@ -172,6 +172,7 @@ jobs:
             done
 
       - name: KeyGen test
+        id: key_gen_test
         working-directory: wrappers/react-native
         if: steps.booted.outcome == 'success'
         run: |
@@ -179,11 +180,18 @@ jobs:
             yarn detox:android:ci -n emu_1 /__tests__/keyGen.e2e.ts
 
       - name: Signature test
+        id: signature_test
         working-directory: wrappers/react-native
         if: steps.booted.outcome == 'success'
         run: |
             $ANDROID_HOME/platform-tools/adb devices -l
             yarn detox:android:ci -n emu_2 /__tests__/signature.e2e.ts
+
+      - name: Cleanup
+        if: steps.key_gen_test.outcome == 'success' && steps.signature_test.outcome == 'success'
+        run: |
+            $ANDROID_HOME/platform-tools/adb -s emulator-5554 emu kill
+            $ANDROID_HOME/platform-tools/adb -s emulator-5556 emu kill
 
       - name: Archive detox failed test results
         if: failure()
